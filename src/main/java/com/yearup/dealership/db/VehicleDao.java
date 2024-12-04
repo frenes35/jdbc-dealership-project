@@ -116,8 +116,21 @@ public class VehicleDao {
     }
 
     public List<Vehicle> searchByMileageRange(int minMileage, int maxMileage) {
-        // TODO: Implement the logic to search vehicles by mileage range
-        return new ArrayList<>();
+        String sql = "SELECT * FROM vehicles WHERE odometer BETWEEN ? AND ?";
+        List<Vehicle> vehicles = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, minMileage);
+            statement.setInt(2, maxMileage);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    vehicles.add(createVehicleFromResultSet(resultSet));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error searching vehicles by mileage range: " + e.getMessage());
+        }
+        return vehicles;
     }
 
     public List<Vehicle> searchByType(String type) {
